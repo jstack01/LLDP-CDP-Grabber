@@ -1,0 +1,10 @@
+# Ignore all capture files globally
+*.pcap
+*.pcapng
+*.cap
+
+/venv/*
+
+**/.DS_Store
+
+/.vscode/*

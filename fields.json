@@ -1,0 +1,15 @@
+{
+  "LLDPfields": [
+    {"wireshark_filter": "chassis.id.mac", "display_as": "Switch MAC: ", "uppercase": true},
+    {"wireshark_filter": "tlv.system.name", "display_as": "Switch Name: ", "uppercase": false},
+    {"wireshark_filter": "port.id", "display_as": "Port ID: ", "uppercase": false},
+    {"wireshark_filter": "ieee.802_1.vlan.id", "display_as": "Native VLAN ID: ", "uppercase": false},
+    {"wireshark_filter": "ieee.802_1.vlan.name", "display_as": "Native VLAN Name: ", "uppercase": false},
+    {"wireshark_filter": "ieee.802_1.port_vlan.id", "display_as": "Available VLANs: ", "uppercase": false}
+  ],
+  "CDPfields": [
+    {"wireshark_filter": "deviceid", "display_as": "Switch Name: ", "uppercase": false},
+    {"wireshark_filter": "portid", "display_as": "Switch ID: ", "uppercase": false},
+    {"wireshark_filter": "native_vlan", "display_as": "Native VLAN: ", "uppercase": false}
+  ]
+}
