@@ -3,8 +3,14 @@
 *.pcapng
 *.cap
 
-/venv/*
+venv/
+.venv/
+dist/
+.vscode/
+__pycache__/
+build/
+nuitka-build/
+
+*.spec
 
 **/.DS_Store
-
-/.vscode/*

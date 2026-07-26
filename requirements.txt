@@ -1,4 +1,10 @@
-argparse
-pyshark
-InquirerPy
-psutil
+appdirs==1.4.4
+inquirerpy==0.3.4
+lxml==6.1.1
+packaging==26.2
+pfzy==0.3.4
+prompt_toolkit==3.0.53
+psutil==7.2.2
+pyshark==0.6
+termcolor==3.3.0
+wcwidth==0.8.2

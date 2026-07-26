@@ -6,6 +6,14 @@ import argparse
 from pathlib import Path
 import shutil
 
+try:
+    import pyshark
+    import psutil
+    from InquirerPy import inquirer
+except ImportError as e:
+    print(f"Missing application dependency: {e}")
+    exit(1)
+
 # Arguments for program listed below:
 parser = argparse.ArgumentParser(description="Arguments for script.")
 
@@ -35,25 +43,7 @@ if args.waitTime is None:
 
 global_tshark_path = ""
 
-def check_dependencies():
-    #if sys.version_info >= (3, 14):
-        #sys.exit("Error: This script only supports Python versions up to 3.13.")
-
-    # External python libraries required for this script.
-    required = ["argparse", "pyshark", "psutil", "InquirerPy"]
-    missing = []
-
-    for lib in required:
-        try:
-            __import__(lib)
-        except ImportError:
-            missing.append(lib)
-
-    if missing:
-        print("\n Required libraries are missing.\n")
-        print(f"Install with: pip install {' '.join(missing)}")
-        print("Or: pip install -r requirements.txt\n")
-        sys.exit(1)
+def check_wireshark():
 
     # Grabs home directory of user to check for tshark in common locations.
     home_path = Path.home()
@@ -97,9 +87,7 @@ def clear():
 
 def main():
     import json
-    import pyshark
     import psutil
-    from InquirerPy import inquirer
     import tempfile
 
     # Set initial variables.
@@ -115,11 +103,27 @@ def main():
         print("Error: The specified pcap file does not exist.")
         sys.exit(1)
 
-    # Checks if fields.json exists in the current directory. If not, it prompts the user to check the GitHub repository for the latest version of this file.
+    
+    default_fields_json = {
+    "LLDPfields": [
+        {"wireshark_filter": "chassis.id.mac", "display_as": "Switch MAC: ", "uppercase": True},
+        {"wireshark_filter": "tlv.system.name", "display_as": "Switch Name: ", "uppercase": False},
+        {"wireshark_filter": "port.id", "display_as": "Port ID: ", "uppercase": False},
+        {"wireshark_filter": "ieee.802_1.vlan.id", "display_as": "Native VLAN ID: ", "uppercase": False},
+        {"wireshark_filter": "ieee.802_1.vlan.name", "display_as": "Native VLAN Name: ", "uppercase": False},
+        {"wireshark_filter": "ieee.802_1.port_vlan.id", "display_as": "Available VLANs: ", "uppercase": False}
+    ],
+    "CDPfields": [
+        {"wireshark_filter": "deviceid", "display_as": "Switch Name: ", "uppercase": False},
+        {"wireshark_filter": "portid", "display_as": "Switch ID: ", "uppercase": False},
+        {"wireshark_filter": "native_vlan", "display_as": "Native VLAN: ", "uppercase": False}
+    ]
+}
+
+    # Checks if fields.json exists in the current directory. If not, it will automatically create one with default values listed above.
     fields_file_path = Path("fields.json")
-    if not fields_file_path.is_file():
-        print("fields.json file does not exist. Please check the github repository for the latest version of this file. Place fields.json file in current working directory.")
-        sys.exit(1)
+    if not fields_file_path.exists():
+        fields_file_path.write_text(json.dumps(default_fields_json, indent=2), encoding="utf-8")
 
     # Imports fields.json file. This will be used to determine which fields to extract from the LLDP and CDP packets.
     # Field options are listed here:
@@ -165,7 +169,7 @@ def main():
                 subprocess.run([global_tshark_path, "-i", interface, "-f", "ether proto 0x88cc", "-c", "1", "-a", "duration:" + str(args.waitTime), "-w", output_pcap], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except:
                 # If tshark fails to run, the script will continue unless the user only specified --lldp.
-                print("Error running tshark. Please check your tshark installation and try again.")
+                print("\nError running tshark. Please check your tshark installation and try again.")
                 if args.lldp:
                     sys.exit(1)
             # Needed to manually create event loops for pyshark.FileCapture().
@@ -177,7 +181,7 @@ def main():
                 lldp_capture = pyshark.FileCapture(output_pcap, display_filter='lldp', eventloop=loop1)
             except:
                 if args.lldp:
-                    print("Unable to read packet capture file. Please try capturing again or use a different interface.")
+                    print("\nUnable to read packet capture file. Please try capturing again or use a different interface.")
                     sys.exit(1)
 
         else:
@@ -190,7 +194,7 @@ def main():
                 lldp_capture = pyshark.FileCapture(args.pcapinput, display_filter='lldp', eventloop=loop1)
             except:
                 if args.lldp:
-                    print ("Unable to read packet capture file. Please check the file and try again.")
+                    print ("\nUnable to read packet capture file. Please check the file and try again.")
                     sys.exit(1)
 
         # Attempts to store lldp capture data into a list. If it fails, the script will continue unless the user only specified --lldp.
@@ -198,7 +202,7 @@ def main():
             lldp_packets = list(lldp_capture)
         except:
             if args.lldp:
-                print("Error occurred while processing LLDP packets.")
+                print("\nError occurred while processing LLDP packets.")
                 sys.exit(1)
         # Attempts to close event loop created earlier.
         try:
@@ -211,13 +215,13 @@ def main():
         # If not, the script will continue unless the user specified --lldp.
         try:
             if len(lldp_packets) == 0:
-                print("No LLDP packets found in the capture.")
+                print("\nNo LLDP packets found in the capture.")
                 if args.lldp:
                     sys.exit(1)
             else:
                 lldp_found = True
         except:
-            print("Error occurred while processing LLDP packets.")
+            print("\nError occurred while processing LLDP packets.")
             if args.lldp:
                 sys.exit(1)
 
@@ -232,7 +236,7 @@ def main():
             try:
                 subprocess.run([global_tshark_path, "-i", interface, "-f", "ether dst 01:00:0c:cc:cc:cc", "-c", "1", "-a", "duration:" + str(args.waitTime), "-w", output_pcap], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except:
-                print("Error running tshark. Please check your tshark installation and try again.")
+                print("\nError running tshark. Please check your tshark installation and try again.")
                 if args.cdp:
                     sys.exit(1)
             loop2 = asyncio.new_event_loop()
@@ -241,7 +245,7 @@ def main():
                 cdp_capture = pyshark.FileCapture(output_pcap, display_filter='cdp', eventloop=loop2)
             except:
                 if args.cdp:
-                    print("Unable to read packet capture file. Please try capturing again or use a different interface.")
+                    print("\nUnable to read packet capture file. Please try capturing again or use a different interface.")
                     sys.exit(1)
         else:
             loop2 = asyncio.new_event_loop()
@@ -250,14 +254,14 @@ def main():
                 cdp_capture = pyshark.FileCapture(args.pcapinput, display_filter='cdp', eventloop=loop2)
             except:
                 if args.cdp:
-                    print("Unable to read packet capture file. Please check the file and try again.")
+                    print("\nUnable to read packet capture file. Please check the file and try again.")
                     sys.exit(1)
 
         try:
             cdp_packets = list(cdp_capture)
         except:
             if args.cdp:
-                print("Error occurred while processing CDP packets.")
+                print("\nError occurred while processing CDP packets.")
                 sys.exit(1)
         try:
             loop2.run_until_complete(cdp_capture.close_async())
@@ -267,13 +271,13 @@ def main():
 
         try:
             if len(cdp_packets) == 0:
-                print("No CDP packets found in the capture.")
+                print("\nNo CDP packets found in the capture.")
                 if args.cdp:
                     sys.exit(1)
             else:
                 cdp_found = True
         except:
-            print("Error occurred while processing CDP packets.")
+            print("\nError occurred while processing CDP packets.")
             if args.cdp:
                 sys.exit(1)
 
@@ -333,5 +337,5 @@ def main():
 
 
 if __name__ == "__main__":
-    check_dependencies()
+    check_wireshark()
     main()

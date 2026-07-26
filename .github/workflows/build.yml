@@ -1,0 +1,79 @@
+name: Build Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            name: lldp-cdp-grabber-macos-arm64
+          - os: ubuntu-latest
+            name: lldp-cdp-grabber-linux-x64
+          - os: windows-latest
+            name: lldp-cdp-grabber-windows-x64.exe
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build executable
+        run: |
+          pyinstaller \
+            --onefile \
+            --name lldp-cdp-grabber \
+            lldp-cdp-grabber.py
+
+      - name: Rename binary
+        shell: bash
+        run: |
+          mkdir release
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            mv dist/lldp-cdp-grabber.exe release/${{ matrix.name }}
+          else
+            mv dist/lldp-cdp-grabber release/${{ matrix.name }}
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: release/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download builds
+        uses: actions/download-artifact@v4
+        with:
+          path: release
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
