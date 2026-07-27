@@ -314,7 +314,7 @@ def main():
         for field in lldp_fields:
             try:
                 # If the user specified "true" for "uppercase" in fields.json, the field name will be converted to all caps.
-                # I put this in here mostly, to keep MAC Addresses looking consistent. 
+                # I put this in here mostly to keep MAC Addresses looking consistent. 
                 if field['uppercase']:
                     print(field['display_as'] + (getattr(lldp_packets[0].lldp, field['wireshark_filter']).upper()))
                 else:
