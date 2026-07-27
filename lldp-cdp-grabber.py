@@ -164,6 +164,7 @@ def main():
                     print("Please re-run this program as administrator")
                 else:
                     print("Please re-run this program as root or sudo.")
+                end_program()
             else:
                 print("Error running tshark. Error: ", stderr)
                 end_program()
