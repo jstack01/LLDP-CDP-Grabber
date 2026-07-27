@@ -178,7 +178,7 @@ def main():
             # Attempts to load file capture created from tshark, if it fails the script will continue unless the user only specified --lldp.
             try:
                 # Loads file capture, and only filters for lldp packets. 
-                lldp_capture = pyshark.FileCapture(output_pcap, display_filter='lldp', eventloop=loop1)
+                lldp_capture = pyshark.FileCapture(output_pcap, display_filter='lldp', eventloop=loop1, tshark_path=global_tshark_path)
             except:
                 if args.lldp:
                     print("\nUnable to read packet capture file. Please try capturing again or use a different interface.")
@@ -191,7 +191,7 @@ def main():
             # Attempts to load file capture provided by user, if it fails the script will continue unless the user only specified --lldp.
             try:
                 # Loads file capture, and only filters for lldp packets.
-                lldp_capture = pyshark.FileCapture(args.pcapinput, display_filter='lldp', eventloop=loop1)
+                lldp_capture = pyshark.FileCapture(args.pcapinput, display_filter='lldp', eventloop=loop1, tshark_path=global_tshark_path)
             except:
                 if args.lldp:
                     print ("\nUnable to read packet capture file. Please check the file and try again.")
@@ -242,7 +242,7 @@ def main():
             loop2 = asyncio.new_event_loop()
             asyncio.set_event_loop(loop2)
             try:
-                cdp_capture = pyshark.FileCapture(output_pcap, display_filter='cdp', eventloop=loop2)
+                cdp_capture = pyshark.FileCapture(output_pcap, display_filter='cdp', eventloop=loop2, tshark_path=global_tshark_path)
             except:
                 if args.cdp:
                     print("\nUnable to read packet capture file. Please try capturing again or use a different interface.")
@@ -251,7 +251,7 @@ def main():
             loop2 = asyncio.new_event_loop()
             asyncio.set_event_loop(loop2)
             try:
-                cdp_capture = pyshark.FileCapture(args.pcapinput, display_filter='cdp', eventloop=loop2)
+                cdp_capture = pyshark.FileCapture(args.pcapinput, display_filter='cdp', eventloop=loop2, tshark_path=global_tshark_path)
             except:
                 if args.cdp:
                     print("\nUnable to read packet capture file. Please check the file and try again.")
