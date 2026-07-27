@@ -54,6 +54,7 @@ def check_wireshark():
                    "C:/Program Files (x86)/Wireshark/tshark.exe", 
                    str(home_path) + "/AppData/Local/Wireshark/tshark.exe", 
                    str(home_path) + "/AppData/Roaming/Wireshark/tshark.exe",
+                   "./App/Wireshark/tshark.exe"
                    "/opt/homebrew/bin/tshark",
                    "/usr/local/bin/tshark",
                    "/Applications/Wireshark.app/Contents/MacOS/tshark",
