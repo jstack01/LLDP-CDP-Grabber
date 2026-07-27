@@ -156,7 +156,7 @@ def main():
             subprocess.run([global_tshark_path, "-i", interface, "-a", "duration:1"], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True, text=True)
         # Checks if error occured when running tshark. 
         except subprocess.CalledProcessError as e:
-            stderr = e.stderr.decode().lower()
+            stderr = e.stderr.lower()
             # Checks if error was related to permissions issue.
             if "permission" in stderr or "denied" in stderr:
                 print("It appears that you do not have permission to capture packets on: " + interface)
