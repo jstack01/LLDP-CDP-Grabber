@@ -54,6 +54,20 @@ Make the file executable on Linux/macOS:
 chmod +x lldp-cdp-grabber
 ```
 
+### macOS: Trust the app
+
+On macOS, Gatekeeper may block the app the first time you run it. If you see a message that the app cannot be opened because it is from an unidentified developer, do one of the following:
+
+- In Finder, right-click the app and choose Open. Then confirm the prompt to allow it to run.
+- On newer macOS versions, you may also need to open System Settings, go to Privacy & Security, and choose Open Anyway or Allow for the app after the first blocked attempt.
+- If you prefer to remove the quarantine flag from the downloaded binary, run:
+
+```bash
+xattr -dr com.apple.quarantine /path/to/lldp-cdp-grabber
+```
+
+Replace `/path/to/lldp-cdp-grabber` with the actual location of the downloaded app.
+
 ### Running from source
 
 Requirements:
