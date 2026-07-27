@@ -39,7 +39,7 @@ jobs:
 
       - name: Build executable
         run: |
-          pyinstaller --onefile --name lldp-cdp-grabber lldp-cdp-grabber.py
+          pyinstaller --onefile --icon=icon.ico --name lldp-cdp-grabber lldp-cdp-grabber.py
 
       - name: Rename binary
         shell: bash

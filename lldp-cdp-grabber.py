@@ -80,11 +80,15 @@ def check_wireshark():
             break
     if not tshark_path_found:
         print("Error: tshark not found. Please install Wireshark and ensure tshark is in your PATH or specify the path using --tsharkpath.")
-        sys.exit(1)
+        end_program()
 
 # Function to clear screen.
 def clear():
     subprocess.run("cls" if os.name == "nt" else "clear", shell=True)
+
+def end_program():
+    input("\nPress enter to exit.")
+    sys.exit(1)
 
 def main():
     import json
@@ -102,7 +106,7 @@ def main():
     pcap_file_path = Path(str(args.pcapinput))
     if not pcap_file_path.is_file() and args.pcapinput:
         print("Error: The specified pcap file does not exist.")
-        sys.exit(1)
+        end_program()
 
     
     default_fields_json = {
@@ -172,7 +176,7 @@ def main():
                 # If tshark fails to run, the script will continue unless the user only specified --lldp.
                 print("\nError running tshark. Please check your tshark installation and try again.")
                 if args.lldp:
-                    sys.exit(1)
+                    end_program()
             # Needed to manually create event loops for pyshark.FileCapture().
             loop1 = asyncio.new_event_loop()
             asyncio.set_event_loop(loop1)
@@ -183,7 +187,7 @@ def main():
             except:
                 if args.lldp:
                     print("\nUnable to read packet capture file. Please try capturing again or use a different interface.")
-                    sys.exit(1)
+                    end_program()
 
         else:
             # Event loops for pyshark.FileCapture().
@@ -196,7 +200,7 @@ def main():
             except:
                 if args.lldp:
                     print ("\nUnable to read packet capture file. Please check the file and try again.")
-                    sys.exit(1)
+                    end_program()
 
         # Attempts to store lldp capture data into a list. If it fails, the script will continue unless the user only specified --lldp.
         try:
@@ -204,7 +208,7 @@ def main():
         except:
             if args.lldp:
                 print("\nError occurred while processing LLDP packets.")
-                sys.exit(1)
+                end_program()
         # Attempts to close event loop created earlier.
         try:
             loop1.run_until_complete(lldp_capture.close_async())
@@ -218,13 +222,13 @@ def main():
             if len(lldp_packets) == 0:
                 print("\nNo LLDP packets found in the capture.")
                 if args.lldp:
-                    sys.exit(1)
+                    end_program()
             else:
                 lldp_found = True
         except:
             print("\nError occurred while processing LLDP packets.")
             if args.lldp:
-                sys.exit(1)
+                end_program()
 
 
     # Runs if user provided --cdp or if neither --lldp nor --cdp were provided.
@@ -239,7 +243,7 @@ def main():
             except:
                 print("\nError running tshark. Please check your tshark installation and try again.")
                 if args.cdp:
-                    sys.exit(1)
+                    end_program()
             loop2 = asyncio.new_event_loop()
             asyncio.set_event_loop(loop2)
             try:
@@ -247,7 +251,7 @@ def main():
             except:
                 if args.cdp:
                     print("\nUnable to read packet capture file. Please try capturing again or use a different interface.")
-                    sys.exit(1)
+                    end_program()
         else:
             loop2 = asyncio.new_event_loop()
             asyncio.set_event_loop(loop2)
@@ -256,14 +260,14 @@ def main():
             except:
                 if args.cdp:
                     print("\nUnable to read packet capture file. Please check the file and try again.")
-                    sys.exit(1)
+                    end_program()
 
         try:
             cdp_packets = list(cdp_capture)
         except:
             if args.cdp:
                 print("\nError occurred while processing CDP packets.")
-                sys.exit(1)
+                end_program()
         try:
             loop2.run_until_complete(cdp_capture.close_async())
             loop2.close()
@@ -274,13 +278,13 @@ def main():
             if len(cdp_packets) == 0:
                 print("\nNo CDP packets found in the capture.")
                 if args.cdp:
-                    sys.exit(1)
+                    end_program()
             else:
                 cdp_found = True
         except:
             print("\nError occurred while processing CDP packets.")
             if args.cdp:
-                sys.exit(1)
+                end_program()
 
     # Prints out interface information.             
     if not args.pcapinput:
@@ -293,7 +297,7 @@ def main():
 
     # Exits if both packets dont contain any data.
     if not lldp_found and not cdp_found:
-        sys.exit(1)
+        end_program()
 
     # Runs if lldp is found.
     if lldp_found:
@@ -340,3 +344,4 @@ def main():
 if __name__ == "__main__":
     check_wireshark()
     main()
+    end_program()
