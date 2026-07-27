@@ -15,7 +15,7 @@ except ImportError as e:
     exit(1)
 
 # Arguments for program listed below:
-parser = argparse.ArgumentParser(description="Arguments for script.")
+parser = argparse.ArgumentParser(description="List of available arguments for lldp-cdp-grabber.")
 
 parser.add_argument("--pcapinput", type=str, required=False, help="Path to network capture file (optional).")
 parser.add_argument("--interface", type=str, help="Interface name")
@@ -149,6 +149,25 @@ def main():
         # Sets inteface variable to the interface selected by the user.
         interface = inquirer.select(message="=== Select an Interface ===\n",choices=interface_names, qmark="").execute()
         clear()
+
+        # Tests to ensure user has permissions to run packet capture. If not, it will prompt the user to run as sudo or administrator.
+        try:
+            # Runs tshark capture on selected interface for 1 second.
+            subprocess.run([global_tshark_path, "-i", interface, "-a", "duration:1"], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True, text=True)
+        # Checks if error occured when running tshark. 
+        except subprocess.CalledProcessError as e:
+            stderr = e.stderr.decode().lower()
+            # Checks if error was related to permissions issue.
+            if "permission" in stderr or "denied" in stderr:
+                print("It appears that you do not have permission to capture packets on: " + interface)
+                if os.name == "nt":
+                    print("Please re-run this program as administrator")
+                else:
+                    print("Please re-run this program as root or sudo.")
+            else:
+                print("Error running tshark. Error: ", stderr)
+                end_program()
+
         # Grabs the MAC address of the selected interface and formats it to be uppercase with colons instead of dashes (for windows devices).
         for address in interfaces[interface]:
             if address.family == psutil.AF_LINK:
