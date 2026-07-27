@@ -161,12 +161,12 @@ def main():
             if "permission" in stderr or "denied" in stderr:
                 print("It appears that you do not have permission to capture packets on: " + interface)
                 if os.name == "nt":
-                    print("Please re-run this program as administrator")
+                    print("Please re-run this program as administrator.")
                 else:
                     print("Please re-run this program as root or sudo.")
                 end_program()
             else:
-                print("Error running tshark. Error: ", stderr)
+                print("Error running tshark. Error: \n", stderr)
                 end_program()
 
         # Grabs the MAC address of the selected interface and formats it to be uppercase with colons instead of dashes (for windows devices).
